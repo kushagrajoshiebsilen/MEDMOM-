@@ -1,0 +1,8 @@
+{
+  "name": "MedMom",
+  "description": "An-empathy driven healthcare companion for medication management and family connection.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
