@@ -21,7 +21,9 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
   const [dose, setDose] = useState('');
   const [unit, setUnit] = useState('mg');
   const [instructions, setInstructions] = useState('');
-  const [time, setTime] = useState('08:00 AM');
+  const [hour, setHour] = useState('08');
+  const [minute, setMinute] = useState('00');
+  const [ampm, setAmpm] = useState('AM');
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]); // Indices: M, T, W, T, F
   const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -46,14 +48,19 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
   };
 
   const handleSave = () => {
-    if (!name || !dose) return;
+    if (!name || !dose || !hour || !minute) return;
     
+    // Explicitly format into 12h time string 'hh:mm A'
+    const formattedHour = hour.padStart(2, '0');
+    const formattedMinute = minute.padStart(2, '0');
+    const formattedTime = `${formattedHour}:${formattedMinute} ${ampm}`;
+
     const newMed: Medication = {
       id: Math.random().toString(36).substr(2, 9),
       name,
       dose: `${dose}${unit}`,
       schedule: selectedDays.length === 7 ? 'Daily' : 'Custom Days',
-      time,
+      time: formattedTime,
       status: 'Pending',
       type: 'Pill',
       days: selectedDays,
@@ -176,23 +183,47 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
         </div>
 
         <div className="space-y-4">
-          <label className="text-xs font-black text-on-surface-variant uppercase tracking-[0.2em] ml-2">Set Time</label>
-          <div className="flex flex-col gap-4">
-             <div className="bg-surface p-5 rounded-[2rem] flex items-center justify-between border-2 border-transparent focus-within:border-primary/20 transition-all shadow-inner">
-                <div className="flex items-center gap-4">
-                   <Clock className="w-7 h-7 text-primary" />
-                   <input 
-                     type="text" 
-                     value={time}
-                     onChange={(e) => setTime(e.target.value)}
-                     className="bg-transparent border-none p-0 focus:ring-0 text-3xl font-black text-on-surface tracking-tighter w-40"
-                   />
-                </div>
-                <button className="p-3 text-error/40 hover:text-error hover:bg-error/5 rounded-full transition-all">
-                   <X className="w-6 h-6" />
-                </button>
-             </div>
-          </div>
+           <label className="text-xs font-black text-on-surface-variant uppercase tracking-[0.2em] ml-2">Set Time</label>
+           <div className="flex flex-col gap-4">
+              <div className="bg-surface p-5 rounded-[2rem] flex items-center justify-between border-2 border-transparent focus-within:border-primary/20 transition-all shadow-inner">
+                 <div className="flex items-center gap-2">
+                    <Clock className="w-7 h-7 text-primary mr-2" />
+                    <select 
+                      value={hour} 
+                      onChange={(e) => setHour(e.target.value)}
+                      className="bg-transparent border-none p-0 focus:ring-0 text-3xl font-black text-on-surface tracking-tighter w-16 text-center cursor-pointer"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                        <option key={h} value={h.toString().padStart(2, '0')}>{h.toString().padStart(2, '0')}</option>
+                      ))}
+                    </select>
+                    <span className="text-3xl font-black text-on-surface-variant">:</span>
+                    <select 
+                      value={minute} 
+                      onChange={(e) => setMinute(e.target.value)}
+                      className="bg-transparent border-none p-0 focus:ring-0 text-3xl font-black text-on-surface tracking-tighter w-16 text-center cursor-pointer"
+                    >
+                      {Array.from({ length: 60 }, (_, i) => i).map(m => (
+                        <option key={m} value={m.toString().padStart(2, '0')}>{m.toString().padStart(2, '0')}</option>
+                      ))}
+                    </select>
+                 </div>
+                 <div className="flex bg-white rounded-full p-1 shadow-sm border border-outline/10">
+                    <button 
+                      onClick={() => setAmpm('AM')}
+                      className={`px-4 py-2 rounded-full text-sm font-black transition-all ${ampm === 'AM' ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-surface'}`}
+                    >
+                      AM
+                    </button>
+                    <button 
+                      onClick={() => setAmpm('PM')}
+                      className={`px-4 py-2 rounded-full text-sm font-black transition-all ${ampm === 'PM' ? 'bg-primary text-white shadow-md' : 'text-on-surface-variant hover:bg-surface'}`}
+                    >
+                      PM
+                    </button>
+                 </div>
+              </div>
+           </div>
         </div>
 
         <div className="space-y-3">

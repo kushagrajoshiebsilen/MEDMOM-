@@ -1,34 +1,42 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { 
-  Users, 
-  UserCircle2, 
   BellRing, 
   Heart, 
   CheckCircle2, 
-  ArrowRight,
-  LogIn
+  ArrowRight
 } from 'lucide-react';
-import { auth } from '../lib/firebase';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { GoogleLogin } from '@react-oauth/google';
 
 interface OnboardingProps {
-  onFinishOnboarding: () => void;
+  onFinishOnboarding: (user: any) => void;
 }
 
 export default function Onboarding({ onFinishOnboarding }: OnboardingProps) {
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleSignIn = async () => {
+  const handleGoogleSuccess = async (credentialResponse: any) => {
     setLoading(true);
+    setError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      onFinishOnboarding();
-    } catch (err) {
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        onFinishOnboarding(data.user);
+      } else {
+        throw new Error(data.error || 'Login failed');
+      }
+    } catch (err: any) {
       console.error("Auth Error:", err);
-      // Fallback for dev/demo if needed, but we have real Firebase now
-      alert("Failed to sign in. Please try again.");
+      setError("Failed to sign in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -85,18 +93,24 @@ export default function Onboarding({ onFinishOnboarding }: OnboardingProps) {
         ))}
       </div>
 
-      <div className="w-full max-w-sm mb-20 space-y-4">
-        <button
-          onClick={handleSignIn}
-          disabled={loading}
-          className="w-full bg-primary text-white rounded-[2rem] py-5 px-8 text-xl font-black shadow-2xl hover:scale-[0.98] transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
-        >
-          {loading ? 'Entering...' : 'Get Started'}
-          <ArrowRight className="w-6 h-6" />
-        </button>
+      <div className="w-full max-w-sm mb-20 space-y-4 flex flex-col items-center">
+        {error && (
+          <p className="text-error text-sm font-bold mb-4">{error}</p>
+        )}
         
-        <p className="text-center text-on-surface-variant font-bold text-xs uppercase tracking-widest opacity-40">
-          Powered by Secure Cloud Auth
+        <div className="w-full flex justify-center py-4">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError("Google Login Failed")}
+            useOneTap
+            theme="filled_blue"
+            shape="pill"
+            width="320px"
+          />
+        </div>
+        
+        <p className="text-center text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em] opacity-40 mt-12">
+          Secured by Google Identity & MongoDB
         </p>
       </div>
     </div>

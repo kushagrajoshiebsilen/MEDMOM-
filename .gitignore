@@ -4,5 +4,10 @@ dist/
 coverage/
 .DS_Store
 *.log
+.vercel
 .env*
 !.env.example
+.env.local
+server/uploads/
+*.sqlite
+*.sqlite3

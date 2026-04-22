@@ -9,9 +9,8 @@ import {
   Camera as CameraIcon,
   AlertCircle
 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
-
 import { Medication } from '../types';
+import { verifyPillAI } from '../services/medService';
 
 interface CameraVerifyProps {
   onBack: (success?: boolean) => void;
@@ -42,54 +41,21 @@ export default function CameraVerify({ onBack, medication }: CameraVerifyProps) 
     setError(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-      const base64Data = image.split(',')[1];
-      
-      let prompt = "Analyze this photo. Is there a physical medicine pill or capsule present in the photo? Answer ONLY with 'YES' or 'NO'. No other text.";
-      const contents: any[] = [
-        {
-          role: "user",
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType: "image/jpeg", data: base64Data } }
-          ]
-        }
-      ];
-
-      if (medication?.referenceImageUrl) {
-        const refBase64 = medication.referenceImageUrl.split(',')[1];
-        prompt = `You are an expert pharmacist helper. 
-        Compare these two photos. 
-        Photo 1 (Reference): This is how ${medication.name} (${medication.dose}) should look.
-        Photo 2 (Current): The user is trying to take this pill now.
-        Do they appear to be the same medication? Consider shape, color, and size.
-        Answer ONLY with 'YES' or 'NO'.`;
-        
-        contents[0].parts = [
-          { text: prompt },
-          { inlineData: { mimeType: "image/jpeg", data: refBase64 } },
-          { inlineData: { mimeType: "image/jpeg", data: base64Data } }
-        ];
-      }
-      
-      const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash-latest",
-        contents
+      const data = await verifyPillAI({
+        imageBase64: image,
+        referenceImageUrl: medication?.referenceImageUrl,
+        medicationName: medication?.name || 'Medication',
+        medicationDose: medication?.dose || 'Dose'
       });
 
-      const result = response.text?.toUpperCase();
-      if (result?.includes('YES')) {
+      if (data.verified) {
         onBack(true);
       } else {
-        if (medication?.referenceImageUrl) {
-          setError(`This pill doesn't look like your recorded ${medication.name}. Please check if you have the right one!`);
-        } else {
-          setError("MedMom couldn't see the medicine properly. Please try again with a clearer photo.");
-        }
+        setError(data.error || "MedMom couldn't see the medicine properly. Please try again with a clearer photo.");
       }
     } catch (err) {
-      console.error("AI Error:", err);
-      setError("Analysis failed. Please check your connection and API key.");
+      console.error("Verification Error:", err);
+      setError("Analysis failed. Please check your connection to the server.");
     } finally {
       setAnalyzing(false);
     }

@@ -6,15 +6,17 @@ import {
   Users, 
   BarChart3, 
   Settings,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
   activeTab: string;
   onTabChange: (tab: string) => void;
-  userRole: 'parent' | 'child' | null;
+  userRole: 'parent' | 'child' | 'standard' | null;
   onShowEmergency: () => void;
+  onLogout?: () => void;
 }
 
 export default function Layout({ 
@@ -22,7 +24,8 @@ export default function Layout({
   activeTab, 
   onTabChange, 
   userRole,
-  onShowEmergency 
+  onShowEmergency,
+  onLogout
 }: LayoutProps) {
   const tabs = [
     { id: 'home', icon: LayoutDashboard, label: 'Home' },
@@ -34,22 +37,34 @@ export default function Layout({
 
   if (!userRole) return <>{children}</>;
 
-  const profileImage = userRole === 'child' 
+  const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const profileImage = savedUser.picture || (userRole === 'child' 
     ? "https://lh3.googleusercontent.com/aida-public/AB6AXuBOuIt087l2Bq_WZyohOn2jgycszFH09C0VPFo6eg6AhmerSRoXm9WCcR8m_m2bx4mIxiV5hZ_w4qCuUjg1l097qKQkKYYfEk07HoNhijZ2lf3zQwPSFnq9p27YFMKocFDbhtfz45lR8xG3kmr2Vccqyh9q9RJ2MORcJczS9Sidmdh_fv-Vamy0DPIbIb2iBGvfC_6Hrxz6r7hMsg6_DQj3Ikls-b4HHGOTq8_4hNYHiG2r3dwzoOjQyHS69MOIY2mYdcxQneSHmD-7"
-    : "https://lh3.googleusercontent.com/aida-public/AB6AXuAcClWMCVpgMsHn_ty4EM4p-v3Lrwsm-VEeuLQAP9CH7xmylIKiWGCdvyLAxoV7-MR7FHfuE7rqGgW-6alXppceEQrN7TBYi682PuZIXSDiPMbzQEJT2xxPm0rF9KToFwt5qBYonwKK5_J1Vs-jrousbar8esj--phCxcd91j8V2KvXYGMuM3GMRGSGHU5adTXJysAB04GMRTY4spIVuapC4yDTboWozk8kKhkw6oPiou92BbU7_tvsG6gn_zCGkqV5MynJJkjLBHdo";
+    : "https://lh3.googleusercontent.com/aida-public/AB6AXuAcClWMCVpgMsHn_ty4EM4p-v3Lrwsm-VEeuLQAP9CH7xmylIKiWGCdvyLAxoV7-MR7FHfuE7rqGgW-6alXppceEQrN7TBYi682PuZIXSDiPMbzQEJT2xxPm0rF9KToFwt5qBYonwKK5_J1Vs-jrousbar8esj--phCxcd91j8V2KvXYGMuM3GMRGSGHU5adTXJysAB04GMRTY4spIVuapC4yDTboWozk8kKhkw6oPiou92BbU7_tvsG6gn_zCGkqV5MynJJkjLBHdo");
 
   return (
     <div className="min-h-screen flex flex-col bg-surface">
       {/* Top Bar */}
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-outline/10 shadow-sm">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center max-w-2xl">
-          <div className="w-10 h-10 rounded-full overflow-hidden border border-outline/20 bg-surface-container">
-            <img 
-              src={profileImage}
-              alt="Profile" 
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden border border-outline/20 bg-surface-container">
+              <img 
+                src={profileImage}
+                alt="Profile" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            {onLogout && (
+              <button 
+                onClick={onLogout}
+                className="p-2 hover:bg-surface-container rounded-full text-on-surface-variant/40 hover:text-error transition-all"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
           
           <h1 className="text-primary font-bold italic text-xl tracking-tight">MedMom</h1>

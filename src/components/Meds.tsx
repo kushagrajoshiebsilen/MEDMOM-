@@ -47,20 +47,6 @@ export default function Meds({ onAction, meds, onDelete }: MedsProps) {
         </div>
       </header>
 
-      {/* Refill Alerts */}
-      <section className="bg-amber-50 border border-amber-200 rounded-[2rem] p-5 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-          <RotateCcw className="w-6 h-6" />
-        </div>
-        <div className="flex-1">
-          <p className="font-bold text-on-surface">Refill Needed</p>
-          <p className="text-xs text-on-surface-variant">Lisinopril is running low (5 left).</p>
-        </div>
-        <button className="bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
-          Order
-        </button>
-      </section>
-
       {/* Prescription List */}
       <section className="space-y-4">
         {meds.map((med) => (
@@ -107,29 +93,26 @@ export default function Meds({ onAction, meds, onDelete }: MedsProps) {
               <Pill className="w-10 h-10" />
             </div>
             <p className="text-on-surface-variant font-bold">No medications added yet.</p>
+            <button 
+              onClick={() => onAction('add')}
+              className="text-primary font-black text-xs uppercase tracking-widest hover:underline"
+            >
+              Add your first prescription
+            </button>
           </div>
         )}
       </section>
 
-      {/* Pharmacy Information */}
+      {/* Info Card */}
       <section className="bg-white rounded-[3rem] p-8 shadow-ambient border border-outline/5 relative overflow-hidden">
          <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
            <AlertTriangle className="w-32 h-32 rotate-12" />
          </div>
-         <h4 className="text-xs font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-6">Preferred Pharmacy</h4>
-         <div className="flex items-start gap-5">
-            <div className="p-4 bg-secondary-container/20 rounded-2xl text-secondary shadow-inner">
-               <AlertTriangle className="w-7 h-7" />
-            </div>
-            <div className="space-y-1">
-               <p className="font-bold text-xl text-on-surface">CVS Health • Hub</p>
-               <p className="text-sm text-on-surface-variant font-medium">(555) 0123-4567 • Green Valley</p>
-               <div className="flex items-center gap-2 mt-2">
-                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                 <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Open Until 9:00 PM</p>
-               </div>
-            </div>
-         </div>
+         <h4 className="text-xs font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Medication Safety</h4>
+         <p className="text-on-surface-variant text-sm font-medium leading-relaxed">
+            MedMom uses AI to help verify your pills, but always double-check the label on your prescription bottle. 
+            If you're unsure, consult your doctor or pharmacist.
+         </p>
       </section>
     </div>
   );
