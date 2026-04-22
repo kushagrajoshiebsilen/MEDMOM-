@@ -11,3 +11,5 @@ coverage/
 server/uploads/
 *.sqlite
 *.sqlite3
+
+.env*.local

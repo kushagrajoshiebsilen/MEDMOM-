@@ -104,12 +104,16 @@ export default function Connect({ connections, onViewDashboard }: ConnectProps) 
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      if (res.ok && data.pairingCode) {
-        setMyCode(data.pairingCode);
-        setMyName(data.displayName || '');
-        localStorage.setItem('user', JSON.stringify(data));
+      if (res.ok) {
+        if (data.pairingCode) {
+          setMyCode(data.pairingCode);
+          setMyName(data.displayName || '');
+          localStorage.setItem('user', JSON.stringify(data));
+        } else {
+          setFeedback({ type: 'error', msg: 'Profile loaded but pairing code is missing. Tap ↺ to retry.' });
+        }
       } else {
-        setFeedback({ type: 'error', msg: data.error || 'Could not load your code. Tap ↺ to retry.' });
+        setFeedback({ type: 'error', msg: data.error || `Server Error: ${res.status}` });
       }
     } catch {
       setFeedback({ type: 'error', msg: 'Network error. Is the server running?' });
@@ -271,18 +275,9 @@ export default function Connect({ connections, onViewDashboard }: ConnectProps) 
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  {needsCall && (
-                    <button 
-                      onClick={() => startCall(member)}
-                      className="w-full bg-[#a33232] text-white py-5 rounded-[1rem] font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-md active:scale-95"
-                    >
-                      <PhoneCall className="w-5 h-5" />
-                      Call {member.displayName}
-                    </button>
-                  )}
                   <button 
                     onClick={() => onViewDashboard(member.uid, member.displayName)}
-                    className="w-full bg-[#0d5952] text-white py-5 rounded-[1rem] font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-md active:scale-95"
+                    className="w-full bg-[#0d5952] text-white py-5 rounded-[1.5rem] font-black text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-md active:scale-95"
                   >
                     View Dashboard <ChevronRight className="w-5 h-5" />
                   </button>

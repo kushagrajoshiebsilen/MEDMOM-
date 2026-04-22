@@ -155,6 +155,18 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
             <div className="w-6 h-6 bg-white rounded-full shadow-md"></div>
           </div>
         </div>
+
+        {/* Test Alarm Sound */}
+        <button 
+          onClick={() => {
+            const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3");
+            audio.play().catch(e => alert("Please allow sound in your browser settings."));
+          }}
+          className="w-full bg-surface-container-low text-primary py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/5 transition-all active:scale-95"
+        >
+          <Volume2 className="w-4 h-4" />
+          Test Alarm Sound
+        </button>
       </section>
 
       {/* Emergency Contacts */}

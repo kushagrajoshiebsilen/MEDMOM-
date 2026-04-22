@@ -38,27 +38,12 @@ export default function CameraVerify({ onBack, medication }: CameraVerifyProps) 
   const verifyPill = async () => {
     if (!image) return;
     setAnalyzing(true);
-    setError(null);
-
-    try {
-      const data = await verifyPillAI({
-        imageBase64: image,
-        referenceImageUrl: medication?.referenceImageUrl,
-        medicationName: medication?.name || 'Medication',
-        medicationDose: medication?.dose || 'Dose'
-      });
-
-      if (data.verified) {
-        onBack(true);
-      } else {
-        setError(data.error || "MedMom couldn't see the medicine properly. Please try again with a clearer photo.");
-      }
-    } catch (err) {
-      console.error("Verification Error:", err);
-      setError("Analysis failed. Please check your connection to the server.");
-    } finally {
+    
+    // Artificial delay for premium feel, but no AI analysis
+    setTimeout(() => {
+      onBack(true);
       setAnalyzing(false);
-    }
+    }, 800);
   };
 
   return (

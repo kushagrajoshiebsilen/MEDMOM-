@@ -48,5 +48,22 @@ npm run dev
 - **AI:** Google Gemini 1.5 Flash.
 - **Deployment:** Vercel.
 
+## 🎙️ In-App Voice Calling (WebRTC)
+The MedMom Voice Call feature provides a secure, peer-to-peer audio connection between Parent and Child users directly within the browser.
+
+### How it Works:
+- **Signaling:** Uses Socket.io to exchange connection metadata (Offers, Answers, and ICE candidates).
+- **Audio Stream:** Leverages the WebRTC `getUserMedia` and `RTCPeerConnection` APIs for high-quality, low-latency voice.
+- **Privacy:** Only basic call metadata (status, caller IDs) is stored in the database. Audio is transmitted peer-to-peer and is never stored.
+
+### How to Test Locally:
+1. Ensure your local server is running (`npm run dev`).
+2. Open **two different browsers** (e.g., Chrome and Edge) or one browser and one Incognito window.
+3. Log in as **Child** in one window and **Parent** in the other.
+4. Ensure both accounts are linked (use the "Pairing Code" in Settings).
+5. On the **Parent Dashboard**, click the "Call" button on the Child's card.
+6. The **Child** will see an "Incoming Call" screen.
+7. Once answered, audio will sync automatically.
+
 ---
 *Built with ❤️ for better care.*

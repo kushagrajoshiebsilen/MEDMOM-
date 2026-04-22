@@ -17,8 +17,9 @@ import { GoogleGenAI } from "@google/genai";
 
 interface DashboardProps {
   role: 'parent' | 'child' | 'standard';
-  onAction: (action: string) => void;
+  onAction: (action: string, id: string, name: string) => void;
   trackedFamilyName?: string | null;
+  trackedFamilyId?: string | null;
   meds: Medication[];
   settings: AppSettings;
   healthReports?: any[];
@@ -202,14 +203,14 @@ export default function Dashboard({ role, onAction, trackedFamilyName, meds, set
       ) : (
         <div className="grid grid-cols-2 gap-4">
             <button 
-              onClick={() => onAction(`call:${trackedFamilyName}`)}
+              onClick={() => onAction('call', trackedFamilyId!, trackedFamilyName!)}
               className="bg-primary text-white p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 active:scale-95 transition-all shadow-lg active:ring-4 ring-primary/20"
             >
               <Phone className="w-8 h-8" />
               <span className="font-bold">Call {trackedFamilyName}</span>
             </button>
             <button 
-              onClick={() => onAction(`remind:${trackedFamilyName}`)}
+              onClick={() => onAction('remind', trackedFamilyId!, trackedFamilyName!)}
               className="bg-white text-on-surface p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 shadow-sm border border-outline/5 active:scale-95 transition-all active:bg-surface"
             >
               <Bell className="w-8 h-8 text-primary shadow-sm" />
