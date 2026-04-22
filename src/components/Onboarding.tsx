@@ -36,7 +36,7 @@ export default function Onboarding({ onFinishOnboarding }: OnboardingProps) {
       }
     } catch (err: any) {
       console.error("Auth Error:", err);
-      setError("Failed to sign in. Please try again.");
+      setError(err.message || "Failed to sign in. Please try again.");
     } finally {
       setLoading(false);
     }

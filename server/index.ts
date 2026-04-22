@@ -5,9 +5,9 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import { GoogleGenAI } from "@google/genai";
-import { User } from './models/User.js';
-import { Medication } from './models/Medication.js';
-import { Connection } from './models/Connection.js';
+import { User } from './models/User';
+import { Medication } from './models/Medication';
+import { Connection } from './models/Connection';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 
@@ -23,6 +23,55 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const JWT_SECRET = process.env.JWT_SECRET || 'medmom-secure-fallback';
 
 const app = express();
+
+// --- Vercel Routing Robustness ---
+const router = express.Router();
+
+// Define all routes on the router WITHOUT the /api prefix
+router.post('/auth/google', async (req, res) => {
+  const { credential } = req.body;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload) throw new Error('Invalid token payload');
+
+    const { sub: uid, email, name: displayName, picture } = payload;
+    const normalizedEmail = email?.toLowerCase() || '';
+
+    let user = await User.findOne({ uid });
+    if (!user) {
+      const pairingCode = await generateUniquePairingCode();
+      user = await User.create({ uid, displayName, email: normalizedEmail, picture, pairingCode });
+    } else {
+      user.displayName = displayName;
+      user.picture = picture;
+      if (!user.pairingCode) user.pairingCode = await generateUniquePairingCode();
+      await user.save();
+    }
+
+    const token = jwt.sign({ uid, email: normalizedEmail }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ success: true, user: user.toJSON(), token });
+  } catch (err: any) {
+    console.error('[AUTH] Error:', err.message);
+    res.status(401).json({ error: 'Authentication failed: ' + err.message });
+  }
+});
+
+router.get('/users/me', authenticate, async (req: any, res) => {
+  try {
+    const user = await User.findOne({ uid: req.user.uid });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user.toJSON());
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+// Use the router for BOTH /api and root to be safe on Vercel
+app.use('/api', router);
+app.use('/', router);
+
 const port = Number(process.env.PORT) || 5000;
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/medmom')
