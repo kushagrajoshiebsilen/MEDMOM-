@@ -5,9 +5,9 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import { GoogleGenAI } from "@google/genai";
-import { User } from './models/User';
-import { Medication } from './models/Medication';
-import { Connection } from './models/Connection';
+import { User } from '../server/models/User';
+import { Medication } from '../server/models/Medication';
+import { Connection } from '../server/models/Connection';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 
