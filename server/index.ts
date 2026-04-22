@@ -437,6 +437,10 @@ app.post('/api/verify-pill', authenticate, async (req, res) => {
   res.json({ verified: true });
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Backend running on http://0.0.0.0:${port}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Backend running on http://0.0.0.0:${port}`);
+  });
+}
+
+export default app;
