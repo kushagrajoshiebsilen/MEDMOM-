@@ -17,7 +17,7 @@ import { GoogleGenAI } from "@google/genai";
 
 interface DashboardProps {
   role: 'parent' | 'child' | 'standard';
-  onAction: (action: string, id: string, name: string) => void;
+  onAction: (action: string, id?: string, name?: string) => void;
   trackedFamilyName?: string | null;
   trackedFamilyId?: string | null;
   meds: Medication[];
@@ -25,7 +25,7 @@ interface DashboardProps {
   healthReports?: any[];
 }
 
-export default function Dashboard({ role, onAction, trackedFamilyName, meds, settings, healthReports = [] }: DashboardProps) {
+export default function Dashboard({ role, onAction, trackedFamilyName, trackedFamilyId, meds, settings, healthReports = [] }: DashboardProps) {
   const [aiTip, setAiTip] = useState<string | null>(null);
   const isViewOnly = !!trackedFamilyName;
 

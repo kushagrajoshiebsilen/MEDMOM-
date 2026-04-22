@@ -213,10 +213,12 @@ router.post('/health-reports/analyze', authenticate, async (req: any, res) => {
   if (!imageBase64) return res.status(400).json({ error: 'No image' });
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = "Analyze this medical report. Explain key findings simply.";
-    const result = await model.generateContent([prompt, { inlineData: { data: imageBase64.split(',')[1], mimeType: "image/jpeg" } }]);
-    const analysis = result.response.text();
+    const result = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: [prompt, { inlineData: { data: imageBase64.split(',')[1], mimeType: "image/jpeg" } }]
+    });
+    const analysis = result.text;
     const newReport = { id: Date.now().toString(), title: title || 'Blood Report', analysis, severity: 'normal', createdAt: new Date() };
     await User.findOneAndUpdate({ uid: req.user.uid }, { $push: { healthReports: newReport } });
     res.json({ success: true, report: newReport });
