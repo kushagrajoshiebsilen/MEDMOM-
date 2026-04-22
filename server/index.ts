@@ -13,13 +13,16 @@ import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (only on local development)
 const UPLOADS_DIR = path.resolve(process.cwd(), 'server', 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) {
+if (!process.env.VERCEL && !fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+if (!process.env.GOOGLE_CLIENT_ID) {
+  console.warn('[WARN] GOOGLE_CLIENT_ID is missing in environment variables.');
+}
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '');
 const JWT_SECRET = process.env.JWT_SECRET || 'medmom-secure-fallback';
 
 const app = express();
