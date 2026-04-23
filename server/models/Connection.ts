@@ -11,4 +11,4 @@ const connectionSchema = new mongoose.Schema({
 // Ensure unique connections between two users
 connectionSchema.index({ uidA: 1, uidB: 1 }, { unique: true });
 
-export const Connection = mongoose.model('Connection', connectionSchema);
+export const Connection = mongoose.models.Connection || mongoose.model('Connection', connectionSchema);
