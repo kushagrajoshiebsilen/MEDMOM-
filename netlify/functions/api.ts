@@ -157,6 +157,24 @@ router.post('/health-reports/analyze', authenticate, async (req: any, res) => {
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
+router.post('/verify-pill', authenticate, async (req, res) => {
+  res.json({ verified: true });
+});
+
+// Mount the router on multiple paths for robustness
 app.use('/.netlify/functions/api', router);
+app.use('/api', router);
+app.use('/', router);
+
+// --- GLOBAL ERROR HANDLER ---
+// This ensures that even if the backend crashes, it returns JSON so we can debug it
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("Global Error Handler:", err);
+  res.status(500).json({ 
+    error: "Backend Error", 
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
 export const handler = serverless(app);
