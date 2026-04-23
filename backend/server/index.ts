@@ -13,10 +13,15 @@ import { Connection } from './models/Connection';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 
+import { fileURLToPath } from 'url';
+
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Ensure uploads directory exists
-const UPLOADS_DIR = path.resolve(process.cwd(), 'backend', 'server', 'uploads');
+const UPLOADS_DIR = path.resolve(__dirname, 'uploads');
 if (!process.env.VERCEL && !fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -41,9 +46,11 @@ app.use(express.json({ limit: '50mb' }));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Serve static frontend in production
-const frontendDistPath = path.resolve(process.cwd(), 'frontend', 'dist');
+const frontendDistPath = path.resolve(__dirname, '..', '..', 'frontend', 'dist');
 if (fs.existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));
+} else {
+  console.warn("Frontend dist not found at:", frontendDistPath);
 }
 
 // --- MIDDLEWARE ---
