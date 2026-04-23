@@ -1,46 +1,40 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import fs from 'fs';
-import path from 'path';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
+import serverless from 'serverless-http';
 import { GoogleGenAI } from "@google/genai";
-import { User } from '../server/models/User';
-import { Medication } from '../server/models/Medication';
-import { Connection } from '../server/models/Connection';
+import { User } from '../../server/models/User';
+import { Medication } from '../../server/models/Medication';
+import { Connection } from '../../server/models/Connection';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 
-dotenv.config();
-
-// Ensure uploads directory exists
-const UPLOADS_DIR = path.resolve(process.cwd(), 'server', 'uploads');
-if (!process.env.VERCEL && !fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
+const app = express();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '');
 const JWT_SECRET = process.env.JWT_SECRET || 'medmom-secure-fallback';
 
-// --- DATABASE ---
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/medmom')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-// --- EXPRESS APP ---
-const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: { origin: "*", methods: ["GET", "POST"] }
-});
+// --- DATABASE CONNECTION HELPER ---
+let isConnected = false;
+const connectDB = async () => {
+  if (isConnected && mongoose.connection.readyState === 1) return;
+  try {
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/medmom');
+    isConnected = true;
+    console.log('Connected to MongoDB');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+  }
+};
 
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use('/uploads', express.static(UPLOADS_DIR));
+app.use(express.json({ limit: '10mb' }));
 
-// --- MIDDLEWARE ---
+// Middleware to ensure DB connection
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
 const authenticate = (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
@@ -52,56 +46,9 @@ const authenticate = (req: any, res: any, next: any) => {
   } catch (err) { res.status(401).json({ error: 'Invalid token' }); }
 };
 
-// --- SIGNALING ENGINE (Socket.io) ---
-const userSocketMap = new Map<string, string>(); // uid -> socketId
-
-io.on('connection', (socket) => {
-  socket.on('identify', (uid: string) => {
-    userSocketMap.set(uid, socket.id);
-  });
-
-  socket.on('call-user', ({ targetUid, callerName, callerId }) => {
-    const targetSocketId = userSocketMap.get(targetUid);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit('incoming-call', { callerId, callerName });
-    }
-  });
-
-  socket.on('accept-call', ({ targetUid }) => {
-    const targetSocketId = userSocketMap.get(targetUid);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit('call-accepted');
-    }
-  });
-
-  socket.on('webrtc-signal', ({ targetUid, signal }) => {
-    const targetSocketId = userSocketMap.get(targetUid);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit('webrtc-signal', { signal, from: socket.id });
-    }
-  });
-
-  socket.on('end-call', ({ targetUid }) => {
-    const targetSocketId = userSocketMap.get(targetUid);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit('call-ended');
-    }
-  });
-
-  socket.on('disconnect', () => {
-    for (const [uid, sid] of userSocketMap.entries()) {
-      if (sid === socket.id) {
-        userSocketMap.delete(uid);
-        break;
-      }
-    }
-  });
-});
-
-// --- REST ROUTES ---
 const router = express.Router();
 
-router.get('/health', (req, res) => res.json({ status: 'ok' }));
+router.get('/health', (req, res) => res.json({ status: 'ok', environment: 'netlify' }));
 
 router.post('/auth/google', async (req, res) => {
   const { credential } = req.body;
@@ -125,18 +72,11 @@ router.get('/users/me', authenticate, async (req: any, res) => {
     let user = await User.findOne({ uid: req.user.uid });
     if (user && !user.pairingCode) {
       const pairingCode = Math.floor(100000 + Math.random() * 900000).toString();
-      user = await User.findOneAndUpdate(
-        { uid: req.user.uid }, 
-        { $set: { pairingCode } }, 
-        { new: true, runValidators: false }
-      );
+      user = await User.findOneAndUpdate({ uid: req.user.uid }, { $set: { pairingCode } }, { new: true });
     }
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user.toJSON());
-  } catch (err: any) {
-    console.error("ME Error:", err);
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
 router.get('/medications/:userId', authenticate, async (req, res) => {
@@ -168,19 +108,12 @@ router.get('/connections/:userId', authenticate, async (req, res) => {
       const otherMeds = await Medication.find({ userId: otherUid });
       const takenToday = otherMeds.filter(m => m.status === 'Taken').length;
       const totalToday = otherMeds.length;
-      const adherence = totalToday > 0 ? Math.round((takenToday / totalToday) * 100) : null;
-      const nextDue = otherMeds
-        .filter(m => m.status === 'Pending')
-        .sort((a, b) => a.time.localeCompare(b.time))[0];
-
       return {
         connectionId: conn._id, status: conn.status,
         member: { uid: otherUid, displayName: otherUser?.displayName || 'Unknown', picture: otherUser?.picture, email: otherUser?.email },
         stats: {
-          takenToday, totalToday, adherencePct: adherence,
-          nextDue: nextDue ? { name: nextDue.name, time: nextDue.time, dose: nextDue.dose } : null,
-          allDone: totalToday > 0 && takenToday === totalToday,
-          noMeds: totalToday === 0,
+          takenToday, totalToday, adherencePct: totalToday > 0 ? Math.round((takenToday / totalToday) * 100) : null,
+          nextDue: null, allDone: totalToday > 0 && takenToday === totalToday, noMeds: totalToday === 0,
         },
         healthReports: otherUser?.healthReports || []
       };
@@ -209,33 +142,21 @@ router.post('/notifications/clear', authenticate, async (req: any, res) => {
   res.json({ success: true });
 });
 
-// --- AI HEALTH ANALYSIS (Gemini) ---
 router.post('/health-reports/analyze', authenticate, async (req: any, res) => {
   const { imageBase64, title } = req.body;
   if (!imageBase64) return res.status(400).json({ error: 'No image' });
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-    const prompt = "Analyze this medical report. Explain key findings simply.";
     const result = await ai.models.generateContent({
       model: "gemini-1.5-flash",
-      contents: [prompt, { inlineData: { data: imageBase64.split(',')[1], mimeType: "image/jpeg" } }]
+      contents: ["Analyze this medical report. Explain key findings simply.", { inlineData: { data: imageBase64.split(',')[1], mimeType: "image/jpeg" } }]
     });
-    const analysis = result.text;
-    const newReport = { id: Date.now().toString(), title: title || 'Blood Report', analysis, severity: 'normal', createdAt: new Date() };
+    const newReport = { id: Date.now().toString(), title: title || 'Blood Report', analysis: result.text, severity: 'normal', createdAt: new Date() };
     await User.findOneAndUpdate({ uid: req.user.uid }, { $push: { healthReports: newReport } });
     res.json({ success: true, report: newReport });
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
-router.post('/verify-pill', authenticate, async (req, res) => {
-  res.json({ verified: true });
-});
+app.use('/.netlify/functions/api', router);
 
-app.use('/api', router);
-
-const port = Number(process.env.PORT) || 5099;
-httpServer.listen(port, '0.0.0.0', () => {
-  console.log(`Server fully restored on port ${port}`);
-});
-
-export default app;
+export const handler = serverless(app);
