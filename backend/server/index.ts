@@ -16,7 +16,7 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 
 // Ensure uploads directory exists
-const UPLOADS_DIR = path.resolve(process.cwd(), 'server', 'uploads');
+const UPLOADS_DIR = path.resolve(process.cwd(), 'backend', 'server', 'uploads');
 if (!process.env.VERCEL && !fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }

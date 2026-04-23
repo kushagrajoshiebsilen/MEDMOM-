@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite --port=3000 --host=0.0.0.0\" \"tsx --watch server/index.ts\"",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist",
+    "dev": "concurrently \"vite frontend --port=3000 --host=0.0.0.0\" \"tsx --watch backend/server/index.ts\"",
+    "build": "vite build frontend",
+    "preview": "vite preview frontend",
+    "clean": "rm -rf frontend/dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
