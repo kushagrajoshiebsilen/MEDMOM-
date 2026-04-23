@@ -72,41 +72,48 @@ export default function Onboarding({ onFinishOnboarding }: OnboardingProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col items-center pt-20 px-6 overflow-x-hidden">
-      <header className="mb-12 text-center">
-        <h1 className="text-primary font-bold italic text-3xl tracking-tight mb-8">MedMom</h1>
-        <h2 className="text-4xl font-bold tracking-tight text-on-surface mb-4">
+    <div className="min-h-screen bg-transparent flex flex-col items-center pt-20 px-6 overflow-x-hidden relative">
+      
+      {/* Decorative ambient blobs behind the glass */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-container opacity-20 blur-[80px] animate-pulse-soft"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-tertiary-container opacity-20 blur-[100px] animate-pulse-soft" style={{ animationDelay: '1s' }}></div>
+      </div>
+
+      <header className="mb-12 text-center animate-fade-in-up">
+        <h1 className="text-primary font-bold italic text-4xl tracking-tight mb-8 animate-float drop-shadow-md">MedMom</h1>
+        <h2 className="text-4xl font-bold tracking-tight text-on-surface mb-4 drop-shadow-sm">
           Your medicine,<br />safely managed.
         </h2>
-        <p className="text-on-surface-variant max-w-sm mb-12">
+        <p className="text-on-surface-variant max-w-sm mb-12 font-medium">
           MedMom brings clarity and peace of mind to daily health routines.
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16 w-full max-w-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 w-full max-w-2xl">
         {features.map((f, i) => (
           <motion.div
             key={f.title}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.1 }}
-            className={`bg-white rounded-3xl p-6 shadow-ambient flex flex-col ${i === 2 ? 'md:col-span-2' : ''}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.15, type: "spring", stiffness: 100 }}
+            className={`glass-card rounded-3xl p-6 flex flex-col ${i === 2 ? 'md:col-span-2' : ''}`}
           >
-            <div className={`w-12 h-12 rounded-full ${f.color} flex items-center justify-center mb-4 text-on-surface`}>
-              <f.icon className="w-6 h-6" />
+            <div className={`w-14 h-14 rounded-2xl ${f.color} flex items-center justify-center mb-5 text-on-surface shadow-inner`}>
+              <f.icon className="w-7 h-7 drop-shadow-sm" />
             </div>
-            <h3 className="text-xl font-bold text-on-surface mb-2">{f.title}</h3>
-            <p className="text-on-surface-variant text-sm">{f.desc}</p>
+            <h3 className="text-2xl font-bold text-on-surface mb-2">{f.title}</h3>
+            <p className="text-on-surface-variant font-medium">{f.desc}</p>
           </motion.div>
         ))}
       </div>
 
-      <div className="w-full max-w-sm mb-20 space-y-4 flex flex-col items-center">
+      <div className="w-full max-w-sm mb-20 space-y-4 flex flex-col items-center animate-fade-in-up stagger-4 glass-panel p-8 rounded-3xl">
         {error && (
-          <p className="text-error text-sm font-bold mb-4">{error}</p>
+          <p className="text-error text-sm font-bold mb-4 bg-error-container/20 px-4 py-2 rounded-lg text-center w-full">{error}</p>
         )}
         
-        <div className="w-full flex justify-center py-4">
+        <div className="w-full flex justify-center py-2 transition-transform duration-300 hover:scale-[1.02]">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={() => setError("Google Login Failed")}
@@ -117,8 +124,8 @@ export default function Onboarding({ onFinishOnboarding }: OnboardingProps) {
           />
         </div>
         
-        <p className="text-center text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em] opacity-40 mt-12">
-          Secured by Google Identity & MongoDB
+        <p className="text-center text-on-surface-variant font-bold text-[10px] uppercase tracking-[0.2em] opacity-50 mt-8">
+          Secured by Google Identity
         </p>
       </div>
     </div>

@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema({
     severity: { type: String, enum: ['normal', 'action_needed', 'urgent'], default: 'normal' },
     imageUrl: { type: String },
     createdAt: { type: Date, default: Date.now }
+  }],
+  emergencyContacts: [{
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    phone: { type: String, required: true },
+    relation: { type: String, default: 'Primary' }
   }]
 }, { 
   timestamps: true,

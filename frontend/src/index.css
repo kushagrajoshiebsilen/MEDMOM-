@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @theme {
   --color-primary: #006b63;
@@ -23,16 +24,67 @@
   --radius-3xl: 3rem;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --animate-fade-in-up: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  --shadow-ambient: 0 8px 40px rgba(0, 57, 58, 0.04);
+  --shadow-premium: 0 4px 6px -1px rgba(0, 57, 58, 0.05), 0 12px 24px -4px rgba(0, 57, 58, 0.08), 0 24px 48px -12px rgba(0, 57, 58, 0.12);
 }
 
 @layer base {
   body {
     @apply bg-surface text-on-surface font-sans antialiased;
+    /* Soft gradient background retaining the original colors */
+    background: linear-gradient(135deg, var(--color-surface-container-low) 0%, var(--color-surface) 100%);
+    min-height: 100vh;
   }
 }
 
 @layer utilities {
-  .shadow-ambient {
-    box-shadow: 0 8px 40px rgba(25, 28, 30, 0.06);
+
+  /* UI/UX Pro Max: Glassmorphism */
+  .glass-panel {
+    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-premium;
   }
+  
+  .glass-card {
+    @apply bg-white/40 backdrop-blur-md border border-white/30 shadow-ambient transition-all duration-300;
+  }
+  .glass-card:hover {
+    @apply bg-white/60 shadow-premium -translate-y-1;
+  }
+
+  .glass-button {
+    @apply relative overflow-hidden transition-all duration-300 active:scale-95;
+  }
+  .glass-button::after {
+    content: '';
+    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 pointer-events-none;
+  }
+  .glass-button:hover::after {
+    @apply opacity-100;
+  }
+  
+  /* Staggered animation delays */
+  .stagger-1 { animation-delay: 100ms; }
+  .stagger-2 { animation-delay: 200ms; }
+  .stagger-3 { animation-delay: 300ms; }
+  .stagger-4 { animation-delay: 400ms; }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
 }

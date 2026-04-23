@@ -49,7 +49,54 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
     }
   };
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const [currentUser, setCurrentUser] = React.useState(JSON.parse(localStorage.getItem('user') || '{}'));
+  const [contacts, setContacts] = React.useState<any[]>([]);
+  const [isAddingContact, setIsAddingContact] = React.useState(false);
+  const [newContact, setNewContact] = React.useState({ name: '', phone: '', relation: 'Primary' });
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/users/me', { 
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } 
+        });
+        const data = await res.json();
+        if (data.emergencyContacts) setContacts(data.emergencyContacts);
+      } catch (err) { console.error("Failed to fetch user data", err); }
+    };
+    fetchUser();
+  }, []);
+
+  const handleAddContact = async () => {
+    if (!newContact.name || !newContact.phone) return alert("Please enter name and phone number");
+    try {
+      const res = await fetch('/api/users/emergency-contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(newContact)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setContacts(data.contacts);
+        setIsAddingContact(false);
+        setNewContact({ name: '', phone: '', relation: 'Primary' });
+      }
+    } catch (err) { console.error("Failed to add contact", err); }
+  };
+
+  const handleRemoveContact = async (id: string) => {
+    try {
+      const res = await fetch(`/api/users/emergency-contacts/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) setContacts(data.contacts);
+    } catch (err) { console.error("Failed to remove contact", err); }
+  };
 
   return (
     <div className="space-y-8 pb-32 animate-in slide-in-from-bottom duration-500">
@@ -178,24 +225,69 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
                </div>
                <h3 className="text-xl font-bold text-on-surface">Emergency Trusted</h3>
             </div>
-            <button className="bg-primary-container text-primary px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest active:scale-95 transition-all shadow-sm">
-               Add
+            <button 
+              onClick={() => setIsAddingContact(!isAddingContact)}
+              className="bg-primary-container text-primary px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest active:scale-95 transition-all shadow-sm"
+            >
+               {isAddingContact ? 'Cancel' : 'Add'}
             </button>
          </div>
 
-         <div className="space-y-4">
-            <div className="bg-surface p-5 rounded-[2rem] flex items-center justify-between border border-outline/5 group hover:bg-white hover:border-primary/20 transition-all cursor-pointer shadow-sm">
-               <div className="flex items-center gap-4">
-                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB82XzdxCufjxYE35SyBaopVj6xboaCyIQQXZgW-TWz1_bYXLDZfeBltSA2RMzQdbqYTlrwB1X66lXc9E1-ir9SWNIsFFOrghf4lJjylw6GidZm5o3OZ4Uh5_8h5kI-QifGoImv3PlnFidsPt1XXZze-GL4WUZsK6gHdeJBQcWKJ49udjRAazbjAzmlQ8RuELp_YtkRjp98ielFJx-orEZYNpdz8mi2fqZlRBGxwlJalu7JHaZQLNWKW_fGG238EgrRCThRS64LYHQe" className="w-14 h-14 rounded-full object-cover shadow-md ring-2 ring-white" alt="Son" referrerPolicy="no-referrer" />
-                  <div>
-                     <p className="font-bold text-lg text-on-surface">David Chen</p>
-                     <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">Primary • Son</p>
-                  </div>
-               </div>
-               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                 <Phone className="w-5 h-5" />
-               </div>
+         {isAddingContact && (
+            <div className="bg-surface p-5 rounded-[2rem] border border-primary/20 space-y-4 animate-in fade-in zoom-in-95">
+               <input 
+                 type="text" 
+                 placeholder="Contact Name" 
+                 value={newContact.name}
+                 onChange={e => setNewContact({...newContact, name: e.target.value})}
+                 className="w-full p-4 rounded-xl border border-outline/20 bg-white"
+               />
+               <input 
+                 type="tel" 
+                 placeholder="Phone Number" 
+                 value={newContact.phone}
+                 onChange={e => setNewContact({...newContact, phone: e.target.value})}
+                 className="w-full p-4 rounded-xl border border-outline/20 bg-white"
+               />
+               <input 
+                 type="text" 
+                 placeholder="Relationship (e.g. Son, Doctor)" 
+                 value={newContact.relation}
+                 onChange={e => setNewContact({...newContact, relation: e.target.value})}
+                 className="w-full p-4 rounded-xl border border-outline/20 bg-white"
+               />
+               <button onClick={handleAddContact} className="w-full bg-primary text-white py-4 rounded-xl font-bold">
+                 Save Contact
+               </button>
             </div>
+         )}
+
+         <div className="space-y-4">
+            {contacts.map((contact) => (
+              <div key={contact.id} className="bg-surface p-5 rounded-[2rem] flex items-center justify-between border border-outline/5 group hover:bg-white hover:border-primary/20 transition-all cursor-pointer shadow-sm">
+                 <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <span className="font-bold text-xl">{contact.name.charAt(0)}</span>
+                    </div>
+                    <div>
+                       <p className="font-bold text-lg text-on-surface">{contact.name}</p>
+                       <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">{contact.relation} • {contact.phone}</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <a href={`tel:${contact.phone}`} className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+                     <Phone className="w-5 h-5" />
+                   </a>
+                   <button onClick={() => handleRemoveContact(contact.id)} className="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error hover:text-white transition-all">
+                     <VolumeX className="w-5 h-5" />
+                   </button>
+                 </div>
+              </div>
+            ))}
+            
+            {contacts.length === 0 && !isAddingContact && (
+              <p className="text-center text-on-surface-variant font-medium opacity-60 py-4">No emergency contacts added yet.</p>
+            )}
          </div>
       </section>
 

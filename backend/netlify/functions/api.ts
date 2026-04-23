@@ -161,6 +161,45 @@ router.post('/verify-pill', authenticate, async (req, res) => {
   res.json({ verified: true });
 });
 
+router.patch('/users/profile', authenticate, async (req: any, res) => {
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { uid: req.user.uid },
+      { $set: req.body },
+      { new: true }
+    );
+    res.json({ success: true, user: updatedUser });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/users/emergency-contacts', authenticate, async (req: any, res) => {
+  try {
+    const newContact = {
+      id: Date.now().toString(),
+      name: req.body.name,
+      phone: req.body.phone,
+      relation: req.body.relation || 'Emergency Contact'
+    };
+    const updatedUser = await User.findOneAndUpdate(
+      { uid: req.user.uid },
+      { $push: { emergencyContacts: newContact } },
+      { new: true }
+    );
+    res.json({ success: true, contacts: updatedUser.emergencyContacts });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+router.delete('/users/emergency-contacts/:id', authenticate, async (req: any, res) => {
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { uid: req.user.uid },
+      { $pull: { emergencyContacts: { id: req.params.id } } },
+      { new: true }
+    );
+    res.json({ success: true, contacts: updatedUser.emergencyContacts });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
 // Mount the router on multiple paths for robustness
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);

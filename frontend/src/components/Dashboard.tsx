@@ -56,7 +56,7 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
   }, [aiTip]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 relative z-10">
       {/* Greeting */}
       <section className="space-y-1">
         <h2 className="text-4xl font-bold tracking-tight text-on-surface">
@@ -78,7 +78,7 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-primary/5 border border-primary/10 p-5 rounded-[2rem] flex items-start gap-4 relative overflow-hidden"
+        className="glass-card bg-primary/5 border border-primary/10 p-5 rounded-[2rem] flex items-start gap-4 relative overflow-hidden stagger-1"
       >
         <div className="absolute top-0 right-0 p-4 text-primary/5">
            <Sparkles className="w-20 h-20 rotate-12" />
@@ -93,9 +93,9 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
       </motion.div>
 
       {/* Progress & Next Task Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up stagger-2">
         {/* Progress Card */}
-        <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-outline/5 flex flex-col items-center justify-center min-h-[240px] relative">
+        <div className="glass-panel rounded-[2.5rem] p-6 flex flex-col items-center justify-center min-h-[240px] relative">
           <h3 className="text-xs font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-6 w-full text-center">
             {isViewOnly ? `${trackedFamilyName}'s Adherence` : "Your Progress Today"}
           </h3>
@@ -124,7 +124,7 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
 
         {/* Status/Next Dose Card */}
         {isViewOnly ? (
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-outline/5 space-y-6 flex flex-col justify-center">
+          <div className="glass-panel rounded-[2.5rem] p-8 space-y-6 flex flex-col justify-center">
              <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-tertiary-container/10 text-tertiary flex items-center justify-center shrink-0 border border-tertiary/20">
                    <Heart className="w-8 h-8 fill-current" />
@@ -147,8 +147,8 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
              )}
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-primary to-primary-container rounded-[2.5rem] p-8 text-on-primary shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
-             <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="bg-gradient-to-br from-primary/90 to-primary-container/90 backdrop-blur-xl rounded-[2.5rem] p-8 text-on-primary shadow-premium border border-white/20 relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+             <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/20 rounded-full blur-2xl animate-pulse-soft"></div>
              <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-primary-container/20 rounded-full blur-xl"></div>
              {nextMed ? (
                <>
@@ -176,17 +176,17 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
 
       {/* Quick Actions */}
       {!isViewOnly ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 animate-fade-in-up stagger-3">
           <button 
             onClick={() => onAction('upload')}
-            className="bg-secondary-container text-on-secondary-container p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:opacity-95 active:scale-[0.98] transition-all shadow-sm border border-outline/5 group"
+            className="glass-button bg-secondary-container/80 backdrop-blur-md text-on-secondary-container p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:shadow-premium border border-white/30 group"
           >
             <Camera className="w-9 h-9 group-hover:scale-110 transition-transform" />
             <span className="font-bold text-sm">Verify Dose</span>
           </button>
           <div 
-            className={`p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 border shadow-sm group transition-all ${
-              settings.collegeMode ? 'bg-secondary text-white border-secondary' : 'bg-white text-on-surface border-outline/5 hover:bg-surface'
+            className={`glass-card p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 group ${
+              settings.collegeMode ? 'bg-secondary/90 text-white border-white/20 shadow-premium' : 'bg-white/40 text-on-surface'
             }`}
           >
             <Clock className={`w-9 h-9 group-hover:scale-110 transition-transform ${settings.collegeMode ? 'text-white' : 'text-on-surface-variant'}`} />
@@ -194,24 +194,24 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
           </div>
           <button 
             onClick={() => onAction('add')}
-            className="bg-primary text-white p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:opacity-95 active:scale-[0.98] transition-all shadow-md md:col-span-1 col-span-2 group"
+            className="glass-button bg-primary/90 backdrop-blur-md text-white p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 shadow-premium border border-white/20 md:col-span-1 col-span-2 group"
           >
             <Plus className="w-9 h-9 group-hover:rotate-90 transition-transform" />
             <span className="font-bold text-sm">New Script</span>
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 animate-fade-in-up stagger-3">
             <button 
               onClick={() => onAction('call', trackedFamilyId!, trackedFamilyName!)}
-              className="bg-primary text-white p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 active:scale-95 transition-all shadow-lg active:ring-4 ring-primary/20"
+              className="glass-button bg-primary/90 backdrop-blur-md text-white p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 shadow-premium border border-white/20"
             >
               <Phone className="w-8 h-8" />
               <span className="font-bold">Call {trackedFamilyName}</span>
             </button>
             <button 
               onClick={() => onAction('remind', trackedFamilyId!, trackedFamilyName!)}
-              className="bg-white text-on-surface p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 shadow-sm border border-outline/5 active:scale-95 transition-all active:bg-surface"
+              className="glass-button glass-card p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 text-on-surface"
             >
               <Bell className="w-8 h-8 text-primary shadow-sm" />
               <span className="font-bold">Send Reminder</span>
@@ -221,7 +221,7 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
 
       {/* Latest Health Report Analysis (Gemini) */}
       {healthReports && healthReports.length > 0 && (
-        <section className="bg-white rounded-[2.5rem] p-8 shadow-ambient border border-outline/5 relative overflow-hidden">
+        <section className="glass-panel rounded-[2.5rem] p-8 relative overflow-hidden animate-fade-in-up stagger-4">
            <div className={`absolute top-0 right-0 w-2 h-full ${
              healthReports[0].severity === 'urgent' ? 'bg-error' : healthReports[0].severity === 'action_needed' ? 'bg-amber-500' : 'bg-primary'
            }`}></div>
@@ -231,10 +231,19 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Latest Health Analysis</p>
                 <h3 className="text-2xl font-black text-on-surface tracking-tight">{healthReports[0].title}</h3>
               </div>
-              <div className={`p-3 rounded-2xl ${
-                healthReports[0].severity === 'urgent' ? 'bg-error/10 text-error' : healthReports[0].severity === 'action_needed' ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'
-              }`}>
-                <Sparkles className="w-6 h-6" />
+              <div className="flex gap-2">
+                <a 
+                  href={`mailto:?subject=Health Report: ${healthReports[0].title}&body=Doctor,%0D%0A%0D%0AHere is my latest health analysis:%0D%0A%0D%0A${encodeURIComponent(healthReports[0].analysis)}`}
+                  className="p-3 rounded-2xl bg-secondary/10 text-secondary hover:bg-secondary hover:text-white transition-all shadow-sm flex items-center justify-center cursor-pointer"
+                  title="Share with Doctor"
+                >
+                  <svg xmlns="http://www.w3.org/http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+                </a>
+                <div className={`p-3 rounded-2xl ${
+                  healthReports[0].severity === 'urgent' ? 'bg-error/10 text-error' : healthReports[0].severity === 'action_needed' ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'
+                }`}>
+                  <Sparkles className="w-6 h-6" />
+                </div>
               </div>
            </div>
 
@@ -261,7 +270,7 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
       )}
 
       {/* Today's Meds List */}
-      <section className="bg-white rounded-[2.5rem] p-8 shadow-ambient border border-outline/5">
+      <section className="glass-panel rounded-[2.5rem] p-8 animate-fade-in-up stagger-4">
         <div className="flex justify-between items-center mb-10">
           <h3 className="text-2xl font-black text-on-surface tracking-tight">
             {isViewOnly ? `${trackedFamilyName}'s Schedule` : "Your Schedule Today"}
@@ -271,8 +280,8 @@ export default function Dashboard({ role, onAction, trackedFamilyName, trackedFa
 
         <div className="space-y-6">
           {meds.map((med) => (
-             <div key={med.id} className={`p-5 rounded-[2rem] flex items-center justify-between group transition-all ${
-               med.status === 'Taken' ? 'bg-surface/50 opacity-80' : 'bg-white border-2 border-primary/10 shadow-sm hover:border-primary/40'
+             <div key={med.id} className={`p-5 rounded-[2rem] flex items-center justify-between group transition-all duration-300 ${
+               med.status === 'Taken' ? 'bg-surface/50 opacity-80' : 'glass-card border-2 border-white/40 hover:border-white/80 hover:shadow-premium'
              }`}>
                 <div className="flex items-center gap-4">
                    <div className={`p-4 rounded-2xl shadow-inner transition-colors ${
