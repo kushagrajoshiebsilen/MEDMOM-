@@ -20,6 +20,7 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
   const [name, setName] = useState('');
   const [dose, setDose] = useState('');
   const [unit, setUnit] = useState('mg');
+  const [type, setType] = useState('Pill');
   const [instructions, setInstructions] = useState('');
   const [hour, setHour] = useState('08');
   const [minute, setMinute] = useState('00');
@@ -56,7 +57,7 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
       schedule: selectedDays.length === 7 ? 'Daily' : 'Custom Days',
       time: formattedTime,
       status: 'Pending',
-      type: 'Pill',
+      type: type,
       days: selectedDays,
       referenceImageUrl: referenceImageUrl || undefined
     };
@@ -78,7 +79,7 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
 
       {/* Basic Info */}
       <div className="bg-white rounded-[3rem] p-8 shadow-ambient border border-outline/5 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
            <div className="space-y-3">
               <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-2">Medicine Name</label>
               <input 
@@ -99,13 +100,39 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
                   placeholder="50" 
                   className="flex-1 bg-surface border-2 border-transparent rounded-3xl py-6 px-6 focus:border-primary transition-all text-2xl font-black text-center shadow-inner" 
                 />
+                <div className="relative flex-1">
+                  <select 
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
+                    className="w-full h-full appearance-none bg-surface border-2 border-transparent rounded-3xl pl-6 pr-12 font-black text-on-surface-variant shadow-inner focus:border-primary transition-all"
+                  >
+                    <option>mg</option><option>ml</option><option>pills</option><option>drops</option><option>mcg</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-primary/50">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </div>
+                </div>
+              </div>
+           </div>
+           
+           <div className="space-y-3 md:col-span-2">
+              <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-2">Medication Type</label>
+              <div className="relative">
                 <select 
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  className="bg-surface border-2 border-transparent rounded-3xl px-6 font-black text-on-surface-variant shadow-inner"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full appearance-none bg-surface border-2 border-transparent rounded-3xl py-6 px-6 font-black text-xl text-on-surface focus:border-primary transition-all shadow-inner"
                 >
-                  <option>mg</option><option>ml</option><option>pills</option>
+                  <option value="Pill">Pill / Tablet</option>
+                  <option value="Liquid">Liquid Solution</option>
+                  <option value="Injection">Injection / Syringe</option>
+                  <option value="Inhaler">Inhaler</option>
+                  <option value="Drops">Eye/Ear Drops</option>
+                  <option value="Topical">Topical Cream</option>
                 </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-primary">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
               </div>
            </div>
         </div>

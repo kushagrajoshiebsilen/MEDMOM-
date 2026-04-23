@@ -40,6 +40,12 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
+// Serve static frontend in production
+const frontendDistPath = path.resolve(process.cwd(), 'frontend', 'dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+}
+
 // --- MIDDLEWARE ---
 const authenticate = (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
@@ -232,6 +238,13 @@ router.post('/verify-pill', authenticate, async (req, res) => {
 });
 
 app.use('/api', router);
+
+// Catch-all route to serve the React app
+if (fs.existsSync(frontendDistPath)) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
 
 const port = Number(process.env.PORT) || 5099;
 httpServer.listen(port, '0.0.0.0', () => {
