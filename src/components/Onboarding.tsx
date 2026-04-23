@@ -26,6 +26,14 @@ export default function Onboarding({ onFinishOnboarding }: OnboardingProps) {
         body: JSON.stringify({ credential: credentialResponse.credential })
       });
 
+      // Check if the response is JSON before parsing
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+         const text = await res.text();
+         console.error("Non-JSON response from server:", text);
+         throw new Error("Backend server is currently unreachable. Please ensure the server is running (npm run dev).");
+      }
+
       const data = await res.json();
       if (data.success) {
         localStorage.setItem('token', data.token);

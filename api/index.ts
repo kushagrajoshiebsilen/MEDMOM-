@@ -101,6 +101,8 @@ io.on('connection', (socket) => {
 // --- REST ROUTES ---
 const router = express.Router();
 
+router.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 router.post('/auth/google', async (req, res) => {
   const { credential } = req.body;
   try {
@@ -231,7 +233,7 @@ router.post('/verify-pill', authenticate, async (req, res) => {
 
 app.use('/api', router);
 
-const port = Number(process.env.PORT) || 5001;
+const port = Number(process.env.PORT) || 5099;
 httpServer.listen(port, '0.0.0.0', () => {
   console.log(`Server fully restored on port ${port}`);
 });
