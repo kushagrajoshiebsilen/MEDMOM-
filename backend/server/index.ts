@@ -253,7 +253,7 @@ if (fs.existsSync(frontendDistPath)) {
   });
 }
 
-const port = Number(process.env.PORT) || 5099;
+const port = Number(process.env.PORT) || 5100;
 httpServer.listen(port, '0.0.0.0', () => {
   console.log(`Server fully restored on port ${port}`);
 });

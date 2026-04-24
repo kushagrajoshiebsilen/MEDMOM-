@@ -41,6 +41,7 @@ export default function Connect({ connections, onViewDashboard }: ConnectProps) 
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
   const [myCode, setMyCode] = useState('');
   const [myName, setMyName] = useState('');
+  const [pairMode, setPairMode] = useState<'show' | 'enter'>('show');
   const [calling, setCalling] = useState<FamilyMember | null>(null);
   const [callStatus, setCallStatus] = useState<'dialing' | 'connected'>('dialing');
 
@@ -110,7 +111,11 @@ export default function Connect({ connections, onViewDashboard }: ConnectProps) 
           setMyName(data.displayName || '');
           localStorage.setItem('user', JSON.stringify(data));
         } else {
-          setFeedback({ type: 'error', msg: 'Profile loaded but pairing code is missing. Tap ↺ to retry.' });
+          // Auto-repair: If profile loaded but code is missing, it should have been generated
+          // We'll try one more time or show a specific fix button
+          console.warn("Pairing code missing in profile, retrying...");
+          setFeedback({ type: 'error', msg: 'Syncing your secure ID...' });
+          setTimeout(fetchMyProfile, 2000); 
         }
       } else {
         setFeedback({ type: 'error', msg: data.error || `Server Error: ${res.status}` });
@@ -286,96 +291,114 @@ export default function Connect({ connections, onViewDashboard }: ConnectProps) 
             );
           })}
         </section>
-      )}
+      )}      {/* Pairing Mode Switcher */}
+      <div className="flex p-2 bg-surface rounded-[2rem] border border-outline/10 shadow-inner max-w-sm mx-auto mb-10">
+        <button 
+          onClick={() => setPairMode('show')}
+          className={`flex-1 py-4 rounded-3xl font-black text-xs uppercase tracking-widest transition-all ${pairMode === 'show' ? 'bg-primary text-white shadow-lg' : 'text-on-surface-variant opacity-40 hover:opacity-100'}`}
+        >
+          My Code
+        </button>
+        <button 
+          onClick={() => setPairMode('enter')}
+          className={`flex-1 py-4 rounded-3xl font-black text-xs uppercase tracking-widest transition-all ${pairMode === 'enter' ? 'bg-primary text-white shadow-lg' : 'text-on-surface-variant opacity-40 hover:opacity-100'}`}
+        >
+          Enter Code
+        </button>
+      </div>
 
-      {/* Your Pairing Code Card */}
-      <section className="bg-white rounded-[3rem] p-8 shadow-ambient border border-outline/5 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-        
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em] opacity-60">Your Unique Code</p>
-            {myName && <p className="text-sm font-bold text-on-surface mt-1">{myName}</p>}
-          </div>
-          <button 
-            onClick={fetchMyProfile} 
-            disabled={fetchingCode}
-            className="p-2 hover:bg-surface rounded-full transition-all text-primary disabled:opacity-40"
-            title="Refresh Code"
-          >
-            <RefreshCw className={`w-5 h-5 ${fetchingCode ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-        
-        <div className="flex flex-col items-center gap-2 mb-6">
-          {fetchingCode ? (
-            <div className="flex items-center gap-3 py-8">
-               <Loader2 className="w-8 h-8 text-primary animate-spin" />
-               <span className="font-bold text-on-surface-variant/60 text-sm">Loading your secure ID...</span>
-            </div>
-          ) : myCode ? (
-            <div className="bg-surface-container/50 px-10 py-8 rounded-[2.5rem] border-2 border-primary/10 shadow-inner w-full text-center">
-               <span className="text-6xl font-black text-primary tracking-[0.15em]">
-                 {myCode.slice(0, 3)}-{myCode.slice(3)}
-               </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 py-6 text-error">
-               <AlertCircle className="w-6 h-6 shrink-0" />
-               <span className="font-bold text-sm">Could not load code. Tap ↺ to retry.</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-           <div className="w-36 h-36 bg-surface p-3 rounded-[2rem] border border-outline/5 flex items-center justify-center">
-              <QrCode className="w-24 h-24 text-on-surface/8" />
-           </div>
-           <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest opacity-30">Share this code with family</p>
-        </div>
-      </section>
-
-      {/* Enter Family Code */}
-      <section>
-        <div className="bg-white rounded-[3rem] p-8 shadow-ambient border border-outline/5">
-          <h3 className="text-xl font-bold text-on-surface mb-1 flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-primary" />
-            Add Family Member
-          </h3>
-          <p className="text-xs text-on-surface-variant mb-6 font-medium">Enter their 6-digit pairing code</p>
+      {pairMode === 'show' ? (
+        /* Your Pairing Code Card */
+        <section className="bg-white rounded-[3rem] p-8 shadow-ambient border border-outline/5 relative overflow-hidden group animate-in slide-in-from-left-4 duration-500">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
           
-          <input 
-            type="text" 
-            inputMode="numeric"
-            maxLength={6}
-            value={pairingCodeInput}
-            onChange={(e) => setPairingCodeInput(e.target.value.replace(/\D/g, ''))}
-            placeholder="000000"
-            className="w-full bg-surface border-2 border-transparent focus:border-primary/30 focus:bg-white p-6 rounded-[2rem] text-center text-4xl font-black tracking-[0.5em] transition-all outline-none shadow-inner"
-          />
-
-          {feedback && (
-            <div className={`mt-4 p-4 rounded-2xl flex items-start gap-3 ${
-              feedback.type === 'success' ? 'bg-primary/10 text-primary' : 'bg-error-container/20 text-error'
-            }`}>
-              {feedback.type === 'success' ? <CheckCircle2 className="w-5 h-5 mt-0.5 shrink-0" /> : <Zap className="w-5 h-5 mt-0.5 shrink-0" />}
-              <p className="text-xs font-bold">{feedback.msg}</p>
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.3em] opacity-60">Your Unique Code</p>
+              {myName && <p className="text-sm font-bold text-on-surface mt-1">{myName}</p>}
             </div>
-          )}
+            <button 
+              onClick={fetchMyProfile} 
+              disabled={fetchingCode}
+              className="p-2 hover:bg-surface rounded-full transition-all text-primary disabled:opacity-40"
+              title="Refresh Code"
+            >
+              <RefreshCw className={`w-5 h-5 ${fetchingCode ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+          
+          <div className="flex flex-col items-center gap-2 mb-6">
+            {fetchingCode ? (
+              <div className="flex items-center gap-3 py-8">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <span className="font-bold text-on-surface-variant/60 text-sm">Loading your secure ID...</span>
+              </div>
+            ) : myCode ? (
+              <div className="bg-surface-container/50 px-10 py-8 rounded-[2.5rem] border-2 border-primary/10 shadow-inner w-full text-center group-hover:border-primary/30 transition-all">
+                <span className="text-6xl font-black text-primary tracking-[0.15em] drop-shadow-sm">
+                  {myCode.slice(0, 3)}-{myCode.slice(3)}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 py-6 text-error text-center">
+                <AlertCircle className="w-6 h-6 shrink-0" />
+                <span className="font-bold text-sm">Could not load code.<br />Tap ↺ to retry.</span>
+              </div>
+            )}
+          </div>
 
-          <button 
-            onClick={handlePair}
-            disabled={loading || pairingCodeInput.length !== 6}
-            className="w-full mt-6 bg-on-surface text-white py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all disabled:opacity-25 disabled:scale-100 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-5 h-5 animate-spin" /> Linking...
-              </span>
-            ) : 'Connect Family Member'}
-          </button>
-        </div>
-      </section>
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-36 h-36 bg-surface p-4 rounded-[2rem] border border-outline/5 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+                <QrCode className="w-24 h-24 text-primary/10" />
+            </div>
+            <p className="text-on-surface-variant font-medium text-sm text-center px-4">
+              Ask your family member to enter this code on their device to link accounts.
+            </p>
+          </div>
+        </section>
+      ) : (
+        /* Enter Family Code */
+        <section className="animate-in slide-in-from-right-4 duration-500">
+          <div className="bg-white rounded-[3rem] p-8 shadow-ambient border border-outline/5">
+            <h3 className="text-xl font-bold text-on-surface mb-1 flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-primary" />
+              Add Family Member
+            </h3>
+            <p className="text-xs text-on-surface-variant mb-6 font-medium">Enter their 6-digit pairing code</p>
+            
+            <input 
+              type="text" 
+              inputMode="numeric"
+              maxLength={6}
+              value={pairingCodeInput}
+              onChange={(e) => setPairingCodeInput(e.target.value.replace(/\D/g, ''))}
+              placeholder="000000"
+              className="w-full bg-surface border-2 border-transparent focus:border-primary/30 focus:bg-white p-6 rounded-[2rem] text-center text-4xl font-black tracking-[0.5em] transition-all outline-none shadow-inner"
+            />
+
+            {feedback && (
+              <div className={`mt-4 p-4 rounded-2xl flex items-start gap-3 ${
+                feedback.type === 'success' ? 'bg-primary/10 text-primary' : 'bg-error-container/20 text-error'
+              }`}>
+                {feedback.type === 'success' ? <CheckCircle2 className="w-5 h-5 mt-0.5 shrink-0" /> : <Zap className="w-5 h-5 mt-0.5 shrink-0" />}
+                <p className="text-xs font-bold">{feedback.msg}</p>
+              </div>
+            )}
+
+            <button 
+              onClick={handlePair}
+              disabled={loading || pairingCodeInput.length !== 6}
+              className="w-full mt-6 bg-on-surface text-white py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all disabled:opacity-25 disabled:scale-100 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Linking...
+                </span>
+              ) : 'Connect Family Member'}
+            </button>
+          </div>
+        </section>
+      )}
 
       {connections.length === 0 && !fetchingCode && (
         <div className="text-center py-8 opacity-40 space-y-2">

@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   displayName: { type: String },
   picture: { type: String },
   email: { type: String, required: true, unique: true, lowercase: true, index: true },
-  pairingCode: { type: String, unique: true, index: true },
+  pairingCode: { type: String, unique: true, index: true, default: generateCode },
   role: { type: String, enum: ['standard', 'parent', 'child'], default: 'standard' },
   connectedMembers: [{ type: String }], // List of UIDs
   settings: {

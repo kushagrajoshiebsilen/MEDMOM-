@@ -61,6 +61,8 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } 
         });
         const data = await res.json();
+        setCurrentUser(data);
+        localStorage.setItem('user', JSON.stringify(data));
         if (data.emergencyContacts) setContacts(data.emergencyContacts);
       } catch (err) { console.error("Failed to fetch user data", err); }
     };
@@ -206,7 +208,7 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
         {/* Test Alarm Sound */}
         <button 
           onClick={() => {
-            const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3");
+            const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/1012/1012-preview.mp3");
             audio.play().catch(e => alert("Please allow sound in your browser settings."));
           }}
           className="w-full bg-surface-container-low text-primary py-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/5 transition-all active:scale-95"
@@ -288,6 +290,28 @@ export default function Settings({ settings, onUpdateSettings }: SettingsProps) 
             {contacts.length === 0 && !isAddingContact && (
               <p className="text-center text-on-surface-variant font-medium opacity-60 py-4">No emergency contacts added yet.</p>
             )}
+         </div>
+      </section>
+
+      {/* Pairing Code */}
+      <section className="bg-white rounded-[3rem] p-8 shadow-ambient border border-outline/5 space-y-6">
+         <div className="flex items-center gap-3 px-2">
+            <div className="p-3 bg-secondary-container/20 rounded-2xl text-secondary shadow-inner">
+               <UserPlus className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-bold text-on-surface">Connect Family</h3>
+         </div>
+         
+         <div className="bg-surface rounded-[2rem] p-8 flex flex-col items-center text-center gap-4 border border-primary/10">
+            <p className="text-xs font-black text-primary uppercase tracking-[0.2em]">Your Unique Pairing Code</p>
+            <div className="bg-white px-10 py-6 rounded-3xl shadow-premium border border-outline/5">
+               <span className="text-5xl font-black text-on-surface tracking-widest tabular-nums">
+                  {currentUser?.pairingCode || '------'}
+               </span>
+            </div>
+            <p className="text-on-surface-variant font-medium text-sm max-w-xs">
+               Share this code with your loved ones to link your MedMom accounts.
+            </p>
          </div>
       </section>
 

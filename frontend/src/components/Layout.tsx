@@ -27,6 +27,7 @@ export default function Layout({
   onShowEmergency,
   onLogout
 }: LayoutProps) {
+  const [showProfileMenu, setShowProfileMenu] = React.useState(false);
   const tabs = [
     { id: 'home', icon: LayoutDashboard, label: 'Home' },
     { id: 'meds', icon: Pill, label: 'Meds' },
@@ -47,24 +48,66 @@ export default function Layout({
       {/* Top Bar */}
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-outline/10 shadow-sm">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center max-w-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden border border-outline/20 bg-surface-container">
+          <div className="flex items-center gap-3 relative">
+            <button 
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="w-10 h-10 rounded-full overflow-hidden border border-outline/20 bg-surface-container active:scale-95 transition-all focus:outline-none"
+            >
               <img 
                 src={profileImage}
                 alt="Profile" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
-            </div>
-            {onLogout && (
-              <button 
-                onClick={onLogout}
-                className="p-2 hover:bg-surface-container rounded-full text-on-surface-variant/40 hover:text-error transition-all"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            <AnimatePresence>
+              {showProfileMenu && (
+                <>
+                  <div className="fixed inset-0 z-[60]" onClick={() => setShowProfileMenu(false)}></div>
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                    className="absolute top-14 left-0 w-56 bg-white rounded-3xl shadow-premium border border-outline/10 z-[70] overflow-hidden"
+                  >
+                    <div className="p-2 space-y-1">
+                      {tabs.map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => {
+                            onTabChange(tab.id);
+                            setShowProfileMenu(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
+                            activeTab === tab.id ? 'bg-primary/10 text-primary' : 'hover:bg-surface text-on-surface-variant'
+                          }`}
+                        >
+                          <tab.icon className="w-5 h-5" />
+                          <span className="font-bold text-sm">{tab.label}</span>
+                        </button>
+                      ))}
+                      
+                      <div className="h-px bg-outline/10 my-2 mx-4"></div>
+                      
+                      {onLogout && (
+                        <button 
+                          onClick={() => {
+                            setShowProfileMenu(false);
+                            onLogout();
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-error hover:bg-error/5 transition-all"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          <span className="font-bold text-sm">Sign Out</span>
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
           
           <h1 className="text-primary font-bold italic text-xl tracking-tight">MedMom</h1>

@@ -115,24 +115,32 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
               </div>
            </div>
            
-           <div className="space-y-3 md:col-span-2">
+           <div className="space-y-4 md:col-span-2">
               <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-2">Medication Type</label>
-              <div className="relative">
-                <select 
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full appearance-none bg-surface border-2 border-transparent rounded-3xl py-6 px-6 font-black text-xl text-on-surface focus:border-primary transition-all shadow-inner"
-                >
-                  <option value="Pill">Pill / Tablet</option>
-                  <option value="Liquid">Liquid Solution</option>
-                  <option value="Injection">Injection / Syringe</option>
-                  <option value="Inhaler">Inhaler</option>
-                  <option value="Drops">Eye/Ear Drops</option>
-                  <option value="Topical">Topical Cream</option>
-                </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-primary">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {[
+                  { id: 'Pill', label: 'Pill', icon: <Pill className="w-5 h-5" /> },
+                  { id: 'Liquid', label: 'Liquid', icon: <div className="w-5 h-5 border-2 border-current rounded-full relative flex items-center justify-center overflow-hidden"><div className="absolute bottom-0 w-full h-1/2 bg-current opacity-40"></div></div> },
+                  { id: 'Injection', label: 'Inject', icon: <Zap className="w-5 h-5" /> },
+                  { id: 'Inhaler', label: 'Inhaler', icon: <Volume2 className="w-5 h-5" /> },
+                  { id: 'Drops', label: 'Drops', icon: <div className="w-3 h-3 bg-current rounded-full rounded-tr-none rotate-45"></div> },
+                  { id: 'Topical', label: 'Cream', icon: <MoreVertical className="w-5 h-5" /> }
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setType(item.id)}
+                    className={`flex flex-col items-center justify-center gap-3 p-4 rounded-[2rem] border-2 transition-all active:scale-95 ${
+                      type === item.id 
+                        ? 'bg-primary text-white border-primary shadow-lg ring-4 ring-primary/5' 
+                        : 'bg-surface border-transparent text-on-surface-variant hover:border-primary/20'
+                    }`}
+                  >
+                    <div className={`${type === item.id ? 'text-white' : 'text-primary'}`}>
+                      {item.icon}
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest">{item.label}</span>
+                  </button>
+                ))}
               </div>
            </div>
         </div>

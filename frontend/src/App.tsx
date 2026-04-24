@@ -165,6 +165,13 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
+  // Request Notification Permission on Mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
   // Alarm Loop
   useEffect(() => {
     if (!isAuthenticated || meds.length === 0 || view !== 'main') return;
@@ -175,6 +182,14 @@ export default function App() {
       if (isDueNow && currentIST !== lastTriggeredTime && !settings.collegeMode && settings.alertPreference === 'loud') {
         setLastTriggeredTime(currentIST);
         setView('alarm');
+
+        // Trigger Native System Notification (Plays Default System Sound)
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("MedMom: Medication Due", {
+            body: "It's time for your scheduled dose!",
+            icon: "/logo192.png" // Use your app logo if available
+          });
+        }
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -257,7 +272,7 @@ export default function App() {
   return (
     <>
       {/* Audio Engine for Alarms */}
-      <audio ref={alarmAudioRef} src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop preload="auto" />
+      <audio ref={alarmAudioRef} src="https://assets.mixkit.co/active_storage/sfx/1012/1012-preview.mp3" loop preload="auto" />
       {view === 'alarm' && (
         <div className="fixed inset-0 z-[100] bg-error flex flex-col items-center justify-center p-8 text-center text-white">
           <h2 className="text-4xl font-black mb-4">CRITICAL DOSE DUE</h2>
