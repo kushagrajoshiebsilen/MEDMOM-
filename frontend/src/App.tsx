@@ -257,7 +257,7 @@ export default function App() {
   return (
     <>
       {/* Audio Engine for Alarms */}
-      <audio ref={alarmAudioRef} src="https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3" loop preload="auto" />
+      <audio ref={alarmAudioRef} src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop preload="auto" />
       {view === 'alarm' && (
         <div className="fixed inset-0 z-[100] bg-error flex flex-col items-center justify-center p-8 text-center text-white">
           <h2 className="text-4xl font-black mb-4">CRITICAL DOSE DUE</h2>

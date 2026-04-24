@@ -174,87 +174,82 @@ export default function AddMed({ onBack, onAdd }: AddMedProps) {
            </div>
         </div>
 
-        {/* PREMIUM CLOCK UI */}
+        {/* REFINED CLOCK UI */}
         <div className="space-y-6">
            <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-2">Alarm Time</label>
            
-              <div className="flex items-center justify-center gap-12 bg-surface rounded-[3rem] p-12 border-2 border-primary/5 shadow-inner">
-                 {/* Hours Dial */}
-                 <div className="flex flex-col items-center gap-4">
+           <div className="flex flex-col md:flex-row items-center justify-center gap-8 bg-surface rounded-[2.5rem] p-8 border border-primary/10 shadow-inner">
+              <div className="flex items-center gap-4">
+                 {/* Hours */}
+                 <div className="flex flex-col items-center">
                     <button 
                       onClick={() => setHour(prev => (parseInt(prev) % 12 + 1).toString().padStart(2, '0'))}
-                      className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary active:scale-90 transition-all"
+                      className="w-12 h-10 rounded-t-2xl bg-white/60 text-primary flex items-center justify-center hover:bg-white transition-all active:scale-95"
                     >
-                      <Plus className="w-6 h-6" />
+                       <Plus className="w-5 h-5" />
                     </button>
                     <input 
                       type="text" 
                       value={hour} 
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        if (val !== '' && parseInt(val) > 12) setHour('12');
-                        else setHour(val);
-                      }}
+                      onChange={(e) => setHour(e.target.value.replace(/\D/g, '').slice(0, 2))}
                       onBlur={() => {
-                        if (!hour || parseInt(hour) === 0) setHour('12');
-                        else setHour(hour.padStart(2, '0'));
+                        const h = parseInt(hour);
+                        if (!h || h > 12) setHour('12');
+                        else setHour(h.toString().padStart(2, '0'));
                       }}
-                      className="w-32 text-center text-8xl font-black text-on-surface tracking-tighter tabular-nums bg-transparent border-none focus:ring-0 focus:outline-none p-0" 
+                      className="w-24 h-24 bg-white shadow-sm border-none text-center text-5xl font-black text-on-surface focus:ring-0"
                     />
                     <button 
                       onClick={() => setHour(prev => (parseInt(prev) === 1 ? 12 : parseInt(prev) - 1).toString().padStart(2, '0'))}
-                      className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary active:scale-90 transition-all"
+                      className="w-12 h-10 rounded-b-2xl bg-white/60 text-primary flex items-center justify-center hover:bg-white transition-all active:scale-95"
                     >
-                      <div className="w-6 h-1 bg-primary rounded-full"></div>
+                       <div className="w-4 h-1 bg-primary rounded-full"></div>
                     </button>
-                    <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Hours</label>
                  </div>
 
-                 <span className="text-5xl font-black text-on-surface-variant/20 mb-8">:</span>
+                 <span className="text-4xl font-black text-on-surface-variant/20">:</span>
 
-                 {/* Minutes Dial */}
-                 <div className="flex flex-col items-center gap-4">
+                 {/* Minutes */}
+                 <div className="flex flex-col items-center">
                     <button 
-                      onClick={() => setMinute(prev => ((parseInt(prev) + 5) % 60).toString().padStart(2, '0'))}
-                      className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary active:scale-90 transition-all"
+                      onClick={() => setMinute(prev => ((parseInt(prev) + 1) % 60).toString().padStart(2, '0'))}
+                      className="w-12 h-10 rounded-t-2xl bg-white/60 text-primary flex items-center justify-center hover:bg-white transition-all active:scale-95"
                     >
-                      <Plus className="w-6 h-6" />
+                       <Plus className="w-5 h-5" />
                     </button>
                     <input 
                       type="text" 
                       value={minute} 
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        if (val !== '' && parseInt(val) > 59) setMinute('59');
-                        else setMinute(val);
-                      }}
-                      onBlur={() => {
-                        if (!minute) setMinute('00');
-                        else setMinute(minute.padStart(2, '0'));
-                      }}
-                      className="w-32 text-center text-8xl font-black text-on-surface tracking-tighter tabular-nums bg-transparent border-none focus:ring-0 focus:outline-none p-0" 
+                      onChange={(e) => setMinute(e.target.value.replace(/\D/g, '').slice(0, 2))}
+                      onBlur={() => setMinute(minute.padStart(2, '0'))}
+                      className="w-24 h-24 bg-white shadow-sm border-none text-center text-5xl font-black text-on-surface focus:ring-0"
                     />
                     <button 
-                      onClick={() => setMinute(prev => (parseInt(prev) === 0 ? 55 : parseInt(prev) - 5).toString().padStart(2, '0'))}
-                      className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary active:scale-90 transition-all"
+                      onClick={() => setMinute(prev => (parseInt(prev) === 0 ? 59 : parseInt(prev) - 1).toString().padStart(2, '0'))}
+                      className="w-12 h-10 rounded-b-2xl bg-white/60 text-primary flex items-center justify-center hover:bg-white transition-all active:scale-95"
                     >
-                      <div className="w-6 h-1 bg-primary rounded-full"></div>
+                       <div className="w-4 h-1 bg-primary rounded-full"></div>
                     </button>
-                    <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Minutes</label>
-                 </div>
-                 
-                 <div className="flex flex-col gap-4">
-                    {['AM', 'PM'].map(p => (
-                      <button
-                        key={p}
-                        onClick={() => setAmpm(p)}
-                        className={`px-8 py-5 rounded-[1.5rem] font-black text-lg transition-all ${ampm === p ? 'bg-primary text-white shadow-xl scale-110' : 'bg-white text-on-surface-variant opacity-40 shadow-sm'}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
                  </div>
               </div>
+
+              {/* AM/PM Switcher */}
+              <div className="flex gap-2 p-2 bg-white/60 rounded-3xl shadow-sm">
+                 {['AM', 'PM'].map(p => (
+                   <button
+                     key={p}
+                     onClick={() => setAmpm(p)}
+                     className={`px-6 py-4 rounded-2xl font-black text-sm transition-all ${
+                       ampm === p 
+                         ? 'bg-primary text-white shadow-md' 
+                         : 'text-on-surface-variant/40 hover:text-on-surface-variant'
+                     }`}
+                   >
+                     {p}
+                   </button>
+                 ))}
+              </div>
+           </div>
         </div>
 
         <div className="space-y-4">
